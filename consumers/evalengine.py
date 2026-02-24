@@ -1,5 +1,6 @@
 from kafka import KafkaConsumer
 import json
+from backend.db import get_connection
 def evaluate_event(event):
     points_bat = 0
     points_bw = 0

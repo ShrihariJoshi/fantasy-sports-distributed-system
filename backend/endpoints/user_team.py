@@ -1,35 +1,38 @@
 from db import get_connection
 from flask import request, jsonify
 def team_handler():
-    data = request.get_json() or {}
+    data=request.get_json() or {}
+    username=data.get("username")
+    match_id=data.get("match_id")
+    team=data.get("team")
+    db=get_connection()
+    teams=db["teams"]
+    players=db["players"]
+    formated_team=[]
+    ROLE_MULTIPLIER = {
+    "captain": 2,
+    "vice_captain": 1.5,
+    "normal": 1
+}
+    for p in team:
+        player_doc = players.find_one(
+             {"player_name": p["player_name"]},
+             {"_id": 0, "player_id": 1})
 
-    team_json = data.get("team", {})
-    username = data.get("username")
-    matchid = data.get("matchid")
-    formatted_team = {
-        "captain": {"name": team_json.get("captain"), "points": 0},
-        "vice_captain": {"name": team_json.get("vice_captain"), "points": 0},
-        "player1": {"name": team_json.get("player1"), "points": 0},
-        "player2": {"name": team_json.get("player2"), "points": 0},
-        "player3": {"name": team_json.get("player3"), "points": 0},
-        "player4": {"name": team_json.get("player4"), "points": 0},
-        "player5": {"name": team_json.get("player5"), "points": 0},
-        "player6": {"name": team_json.get("player6"), "points": 0},
-        "player7": {"name": team_json.get("player7"), "points": 0},
-        "player8": {"name": team_json.get("player8"), "points": 0},
-        "player9": {"name": team_json.get("player9"), "points": 0},
-    }
-
-    db = get_connection()
-    teams = db["teams"]
-
+        pid = player_doc["player_id"]
+        formated_team.append({
+            "player_id":pid,
+            "multiplier":ROLE_MULTIPLIER[p["role"]],
+            "points":0
+        })
     teams.insert_one({
-        "match_id": matchid,
-        "username": username,
-        "team": formatted_team
+        "username":username,
+        "match_id":match_id,
+        "team":formated_team
     })
+    return jsonify(message="team added sucessfully"),201
+from flask import request, jsonify
 
-    return jsonify(message="team added successfully"), 201
 def get_team_score():
     username = request.args.get("username")
     matchid = request.args.get("matchid")
@@ -37,10 +40,42 @@ def get_team_score():
         return jsonify({"error": "username and matchid required"}), 400
     db = get_connection()
     teams = db["teams"]
-    res = teams.find_one(
-        {"username": username, "match_id": int(matchid)},
+    players = db["players"]
+    user_team_doc = teams.find_one(
+        {"username": username, "match_id": matchid},
         {"_id": 0, "team": 1}
     )
-    if not res:
+
+    if not user_team_doc:
         return jsonify({"error": "team not found"}), 404
-    return jsonify(res), 200
+
+    team = user_team_doc["team"]
+    player_ids = [p["player_id"] for p in team]
+    player_docs = players.find(
+        {
+            "match_id": matchid,
+            "player_id": {"$in": player_ids}
+        },
+        {
+            "_id": 0,
+            "player_id": 1,
+            "points": 1
+        }
+    )
+    points_map = {
+        p["player_id"]: p["points"]
+        for p in player_docs
+    }
+
+    total_score = 0
+    for player in team:
+        base_points = points_map.get(player["player_id"], 0)
+        final_points = base_points * player["multiplier"]
+
+        player["points"] = final_points
+        total_score += final_points
+
+    return jsonify({
+        "team": team,
+        "total_score": total_score
+    }), 200

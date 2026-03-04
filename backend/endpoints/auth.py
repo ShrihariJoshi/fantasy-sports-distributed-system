@@ -2,18 +2,21 @@ from db import get_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import request, jsonify
 from flask_jwt_extended import create_access_token
-
+import itertools
 def register_handler():
+    id_generator = itertools.count()
     data = request.get_json() or {}
     username = data.get("username")
     password = data.get("password")
     if not (username and password):
         return jsonify(message="missing fields"), 400
     hashed = generate_password_hash(password)
+    uid="uid"+str(next(id_generator))
     db = get_connection()
     users=db["users"]
-    res=users.insert_one({
+    users.insert_one({
         "username":username,
+        "user_id":uid,
         "password_hash":hashed
     })
     return jsonify(message="user sucessfully registered "),201

@@ -7,9 +7,7 @@ producer = KafkaProducer(
 )
 
 event = {
-    "match_id": 12347,
-    "team1": {
-        "team_name": "India",
+    "match_id": "M12347",
         "players": [
             "Rohit Sharma",
             "Shubman Gill",
@@ -21,12 +19,7 @@ event = {
             "Axar Patel",
             "Jasprit Bumrah",
             "Mohammed Shami",
-            "Kuldeep Yadav"
-        ]
-    },
-    "team2": {
-        "team_name": "Australia",
-        "players": [
+            "Kuldeep Yadav",
             "David Warner",
             "Travis Head",
             "Steve Smith",
@@ -39,10 +32,10 @@ event = {
             "Adam Zampa",
             "Josh Hazlewood"
         ]
-    }
 }
 
 producer.send("player-events", event)
+print("sending",event)
 producer.flush()
 
 print("Squads sent successfully!")

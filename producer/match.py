@@ -8,7 +8,6 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 
-MATCH_ID = 12347
 
 batsmen = [
     "Virat Kohli",
@@ -18,10 +17,12 @@ batsmen = [
 ]
 
 bowlers = [
-    "Bumrah",
-    "Shami",
-    "Starc",
-    "Cummins"
+    "Josh Hazlewood",
+    "Pat Cummins",
+    "Mitchell Starc",
+    "Kuldeep Yadav"
+
+
 ]
 
 batting_events = ["FOUR", "SIX", "RUNS"]
@@ -29,7 +30,7 @@ bowling_events = ["BOWLED", "CAUGHT", "RUN_OUT", "DOT"]
 
 over = 1
 ball = 1
-
+match_id="M12347"
 print("Starting Dummy Match Simulation...\n")
 
 while over <= 2: 
@@ -47,7 +48,7 @@ while over <= 2:
         runs = 0
 
     event = {
-        "match_id": MATCH_ID,
+        "match_id":match_id,
         "over": float(f"{over}.{ball}"),
         "batsman": batsman,
         "bowler": bowler,

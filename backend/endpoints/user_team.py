@@ -1,5 +1,6 @@
 from db import get_connection
 from flask import request, jsonify
+import redis
 def team_handler():
     data=request.get_json() or {}
     username=data.get("username")
@@ -13,7 +14,8 @@ def team_handler():
     "captain": 2,
     "vice_captain": 1.5,
     "normal": 1
-}
+    }
+    r = redis.Redis(host="localhost", port=6379, decode_responses=True)
     for p in team:
         player_doc = players.find_one(
              {"player_name": p["player_name"]},
@@ -30,6 +32,15 @@ def team_handler():
         "match_id":match_id,
         "team":formated_team
     })
+    for p in formated_team:
+        pid = p["player_id"]
+        multiplier = p["multiplier"]
+        r.sadd(f"player_teams:{match_id}:{pid}", username)
+        r.hset(
+            f"team:{username}:{match_id}",
+            pid,
+            multiplier
+        )
     return jsonify(message="team added sucessfully"),201
 from flask import request, jsonify
 

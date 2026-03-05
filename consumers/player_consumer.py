@@ -5,7 +5,6 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from backend.db import get_connection
 import itertools
-
 def consume_event():
     id_genetrator=itertools.count()
     consumer=KafkaConsumer(
@@ -20,11 +19,12 @@ def consume_event():
         for player in event["players"]:
             pid="pid"+str(next(id_genetrator))
             db.players.insert_one({
-        "match_id": match_id,
-        "player_name": player,
-        "player_id":pid,
-        "points": 0
-
-    })
+            "match_id": match_id,
+            "player_name": player,
+            "player_id":pid,
+            "points": 0
+            })
+    
+        
 if __name__=="__main__":
     consume_event()

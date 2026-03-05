@@ -1,13 +1,16 @@
 from kafka import KafkaProducer
 import json
-
+from itertools import count
+def getKey(match_no):
+    match_genrator=count()
+    return "M"+str(next(match_genrator))
+match_no=1
 producer = KafkaProducer(
     bootstrap_servers='localhost:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    value_serializer=lambda v: json.dumps(v).encode('utf-8'),
 )
-
 event = {
-    "match_id": "M12347",
+    "match_id": getKey(match_no),
         "players": [
             "Rohit Sharma",
             "Shubman Gill",
@@ -34,8 +37,8 @@ event = {
         ]
 }
 
-producer.send("player-events", event)
-print("sending",event)
+producer.send("player-events",key=getKey(match_no).encode('utf-8'),value=event)
+print("sending",event )
 producer.flush()
 
 print("Squads sent successfully!")

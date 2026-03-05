@@ -2,7 +2,11 @@ from kafka import KafkaProducer
 import json
 import time
 import random
-
+from itertools import count
+def getKey(match_no):
+    match_genrator=count()
+    return "M"+str(next(match_genrator))
+match_no=1
 producer = KafkaProducer(
     bootstrap_servers='localhost:9092',
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
@@ -57,7 +61,7 @@ while over <= 2:
         "event_class": event_class
     }
 
-    producer.send("match-events", event)
+    producer.send("match-events", key=getKey(match_no).encode('utf-8'),value=event)
     producer.flush()
 
     print(f"Sent Event: {event}")

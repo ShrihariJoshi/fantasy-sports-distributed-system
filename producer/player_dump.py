@@ -2,8 +2,7 @@ from kafka import KafkaProducer
 import json
 from itertools import count
 def getKey(match_no):
-    match_genrator=count()
-    return "M"+str(next(match_genrator))
+    return "M1"
 match_no=1
 producer = KafkaProducer(
     bootstrap_servers='localhost:9092',

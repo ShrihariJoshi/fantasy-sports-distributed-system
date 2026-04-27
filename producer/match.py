@@ -34,7 +34,7 @@ bowling_events = ["BOWLED", "CAUGHT", "RUN_OUT", "DOT"]
 
 over = 1
 ball = 1
-match_id="M12347"
+match_id="M1"
 print("Starting Dummy Match Simulation...\n")
 
 while over <= 2: 

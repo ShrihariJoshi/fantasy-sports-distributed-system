@@ -1,11 +1,12 @@
 #!/bin/bash
 echo "Starting Player Consumer..."
-gnome-terminal -- bash -c "python3 consumers/player_consumer.py; exec bash"
+python3 consumers/player_consumer.py &
 
 echo "Starting Eval Engine..."
-gnome-terminal -- bash -c "python3 consumers/evalengine.py; exec bash"
+python3 consumers/evalengine.py &
 
 echo "starting leaderboard conumer"
-gnome-terminal -- bash -c "python3 consumers/leaderboard_consumer.py; exec bash"run
+python3 consumers/leaderboard_consumer.py &
 
-sleep 2
+echo "All consumers started in the background. Press Ctrl+C to stop them."
+wait

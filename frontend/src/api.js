@@ -100,8 +100,8 @@ export const addTeam = async (matchId, team) => {
 };
 
 // 🔥 LEADERBOARD
-export const getLeaderboard = async () => {
-  const response = await fetch(`${API_BASE_URL}/leaderboard`, { headers: getHeaders() });
+export const getLeaderboard = async (matchId = 'M1') => {
+  const response = await fetch(`${API_BASE_URL}/leaderboard?match_id=${matchId}`, { headers: getHeaders() });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || 'Failed to fetch leaderboard');
   return data.leaderboard;

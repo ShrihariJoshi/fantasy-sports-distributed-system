@@ -54,7 +54,7 @@ const Leaderboard = () => {
                                             </div>
                                         </td>
                                         <td>{player.username}</td>
-                                        <td className="points-cell">{player.total_points || 0}</td>
+                                        <td className="points-cell">{player.score || 0}</td>
                                     </tr>
                                 ))}
                                 {players.length === 0 && (

@@ -53,3 +53,4 @@
         path: "{{ app_dest }}/.deploy_complete"
         state: touch
         mode: "0644"
+

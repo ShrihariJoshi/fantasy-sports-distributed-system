@@ -48,9 +48,9 @@
           "import flask, pymongo, redis, kafka, dotenv, werkzeug;
           print('Deployment imports ok')"
       changed_when: false
+
     - name: Touch deployment marker file
       ansible.builtin.file:
         path: "{{ app_dest }}/.deploy_complete"
         state: touch
         mode: "0644"
-

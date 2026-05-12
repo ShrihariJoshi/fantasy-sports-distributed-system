@@ -1,0 +1,41 @@
+- name: Deploy fantasy sports app
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    app_src: "{{ playbook_dir }}/.."
+    app_dest: "/tmp/fantasy-sports-app"
+    venv_path: "{{ app_dest }}/.venv"
+
+  tasks:
+    - name: Ensure deployment directory exists
+      ansible.builtin.file:
+        path: "{{ app_dest }}"
+        state: directory
+        mode: '0755'
+
+    - name: Sync repository files to deployment path
+      ansible.builtin.command:
+        cmd: rsync -a --delete "{{ app_src }}/" "{{ app_dest }}/"
+
+    - name: Create Python virtual environment
+      ansible.builtin.command:
+        cmd: python3 -m venv "{{ venv_path }}"
+      args:
+        creates: "{{ venv_path }}/bin/activate"
+
+    - name: Install requirements in virtualenv
+      ansible.builtin.command:
+        cmd: |
+          "{{ venv_path }}/bin/python" -m pip install --upgrade pip
+          "{{ venv_path }}/bin/pip" install -r "{{ app_dest }}/requirements.txt"
+
+    - name: Validate deployment imports in virtualenv
+      ansible.builtin.command:
+        cmd: |
+          "{{ venv_path }}/bin/python" -c "import flask, pymongo, redis, kafka, dotenv, werkzeug; print('Deployment imports ok')"
+
+    - name: Touch deployment marker file
+      ansible.builtin.file:
+        path: "{{ app_dest }}/.deploy_complete"
+        state: touch

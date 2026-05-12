@@ -1,4 +1,4 @@
-name: devsecops proj
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,22 +7,61 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    - name: Install Dependencies
-      run: |
-        pip install kafka-python redis pymongo
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run Basic Import Test
-      run: |
-        python -c "import kafka, redis, pymongo; print('All imports OK')"
+      - name: Validate Python imports
+        run: |
+          python -m compileall backend consumers producer test_setup.py || true
+          python -c "import flask, pymongo, redis, kafka, dotenv, werkzeug; print('Python imports are valid')"
+
+      - name: Install Ansible and ansible-lint
+        run: |
+          python -m pip install ansible-core ansible-lint
+
+      - name: Lint Ansible playbook
+        run: |
+          ansible-lint ansible/playbook.yml
+
+      - name: Run Ansible check mode
+        run: |
+          ansible-playbook -i ansible/inventory.ini ansible/playbook.yml --check
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible-core
+
+      - name: Run Ansible deploy
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: 'False'
+        run: |
+          ansible-playbook -i ansible/inventory.ini ansible/playbook.yml
